@@ -133,8 +133,7 @@
           filters: [{
             vendorId: 0x0483,  // 根据VID进行过滤
             productId: 0x5750, // 根据PID进行过滤
-            //         usagePage: 0x0c,   // 根据usagePage进行过滤
-            //         usage: 0x01,       // 根据usage进行过滤
+            productName: "CUSTOM1",
           },],
         });
 
@@ -147,6 +146,12 @@
         }
 
         device = devices[0]; // 选择列表中第一个设备
+        console.log(device.productName);
+
+        if (device.productName != "CUSTOM1")
+          device = devices[1];
+        console.log(device);
+        console.log(devices);
 
         if (!device.opened) {
           // 检查设备是否打开
