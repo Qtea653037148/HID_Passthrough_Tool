@@ -61,7 +61,11 @@
     <button id="btnOpen">连接</button>
     <button id="btnSend">发送</button>
     <button id="btnClear">接收</button>
-    <button id="bluetooth">蓝牙</button>
+    <div style="padding:0px">
+      <button id="btnclearlog">清空</button>
+      <button id="bluetooth">蓝牙</button>
+    </div>
+
 
 
     <textarea id="iptLog" readonly></textarea>
@@ -70,7 +74,8 @@
     <div class="child">
 
       <p id="sliderValue">100</p>
-      <input style="width: 200px" ; type="range" min="0" max="255" value="100" id="slider" class="container">
+      <input style="width: 200px;height: 50px;" ; type="range" min="0" max="255" value="100" id="slider"
+        class="container">
 
 
       <div style="width: 300px ;height: 0px;" ;>
@@ -97,15 +102,40 @@
           placeholder="范围0~100" />
         <input id="input5" style="width: 76px" type="number" value="30" step="1" min="0" max="100"
           placeholder="范围0~100" />
+        <div style="padding:0px">
 
+          <head>
+            <meta charset="UTF-8">
+            <title>HTML5 Combobox</title>
+            <style>
+              #combobox {
+                width: 100px;
+                height: 30px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 5px;
+                font-size: 14px;
+              }
+            </style>
+          </head>
+
+          <body>
+
+            <select id="combobox">
+            </select>
+        </div>
       </div>
 
-      <div style="width: 300px" ;>
-
+      <div style="width: 300px;height: 100px;" ;>
         <button id="btnAdd" style="width: 80px">指定+</button>
         <button id="btnDel" style="width: 80px">指定-</button>
         <button id="btnAll" style="width: 80px">整体赋值</button>
+      </div>
 
+      <div style="width: 300px" ;>
+        <input id="input_read" style="width: 76px" type="number" value="1" step="1" min="0" max="10"
+          placeholder="范围0~10" />
+        <button id="btnRead" style="width: 80px">读取</button>
       </div>
 
 
@@ -122,6 +152,9 @@
     const btnAdd = document.querySelector("#btnAdd");
     const btnDel = document.querySelector("#btnDel");
     const btnAll = document.querySelector("#btnAll");
+    const btnRead = document.querySelector("#btnRead");
+    const btnclearlog = document.querySelector("#btnclearlog");
+
     const bluetooth = document.querySelector("#bluetooth");
     const iptLog = document.querySelector("#iptLog");
     const iptOutput = document.querySelector("#iptOutput");
@@ -146,8 +179,18 @@
 
 
     let device; // 需要连接或已连接的设备
-    let inputDataLength = 50; // 发送数据包长度
-    let outputDataLength = 50; // 发送数据包长度
+    let inputDataLength = 100; // 发送数据包长度
+    let outputDataLength = 100; // 发送数据包长度
+
+
+
+    for (let i = 1; i < 85; i++) {
+
+      var newOption = document.createElement("option");
+      newOption.textContent = "按键 " + i;
+      newOption.value = i;
+      document.getElementById("combobox").appendChild(newOption);
+    }
 
 
 
@@ -281,6 +324,13 @@
 
     };
 
+    //指令 清空log
+
+    btnclearlog.onclick = async () => {
+
+      iptInput.value = "";
+      iptLog.value = "";
+    };
 
     // 全局HID设备拔出事件
     navigator.hid.ondisconnect = (event) => {
@@ -361,7 +411,7 @@
         iptLog.scrollTop = iptLog.scrollHeight; // 滚动到底部
       }
     };
-    //指令 所有按键+
+    //指令 所有赋值
     color3.onclick = async () => {
       try {
         if (!device?.opened) {
@@ -390,8 +440,144 @@
       }
     };
 
+    //指令 指定+
+    btnAdd.onclick = async () => {
+      try {
+        if (!device?.opened) {
+          throw "Device not opened";
+
+        }
+        const Custom_table = new Uint8Array(50);
+        for (let i = 0; i < 50; i++)
+          Custom_table[i] = 0;
+        Custom_table[0] = 0xfe;
+        Custom_table[1] = 0x04;
+        var inputElement = document.getElementById("input4");
+        var inputValue = inputElement.value;
+
+        var coomElement = document.getElementById("combobox");
+        Custom_table[2] = coomElement.value;//按键编号
+        Custom_table[3] = inputValue;//增减值
+
+        let hexstr = "FE 04 ";
+        let val = parseInt(coomElement.value);
+        hexstr += convertToHexadecimal(val) + " ";
+        val = parseInt(inputValue);
+        hexstr += convertToHexadecimal(val);
+        iptOutput.value = "";
+        iptOutput.value = hexstr; // 将数值转为16进制字符串
+        //  console.log(inputValue, hexstr); //打印信息
+        await device.sendReport(0, Custom_table); // 发送数据，第一个参数为reportId，填0表示不使用reportId
+
+      } catch (error) {
+        iptLog.value += `${error}\n\n`;
+        iptLog.scrollTop = iptLog.scrollHeight; // 滚动到底部
+      }
+
+    };
+    //指令 指定-
+    btnDel.onclick = async () => {
+      try {
+        if (!device?.opened) {
+          throw "Device not opened";
+
+        }
+        const Custom_table = new Uint8Array(50);
+        for (let i = 0; i < 50; i++)
+          Custom_table[i] = 0;
+        Custom_table[0] = 0xfe;
+        Custom_table[1] = 0x05;
+        var inputElement = document.getElementById("input5");
+        var inputValue = inputElement.value;
+        var coomElement = document.getElementById("combobox");
+        Custom_table[2] = coomElement.value;//按键编号
+        Custom_table[3] = inputValue;//增减值
+
+        let hexstr = "FE 05 ";
+        let val = parseInt(coomElement.value);
+        hexstr += convertToHexadecimal(val) + " ";
+        val = parseInt(inputValue);
+        hexstr += convertToHexadecimal(val);
+        iptOutput.value = "";
+        iptOutput.value = hexstr; // 将数值转为16进制字符串
+        // console.log(inputValue, hexstr); // 打印信息
+        await device.sendReport(0, Custom_table); // 发送数据，第一个参数为reportId，填0表示不使用reportId
+
+      } catch (error) {
+        iptLog.value += `${error}\n\n`;
+        iptLog.scrollTop = iptLog.scrollHeight; // 滚动到底部
+      }
+
+    };
+
+    //指令 批量赋值
+    btnAll.onclick = async () => {
+      try {
+        if (!device?.opened) {
+          throw "Device not opened";
+
+        }
+        const Custom_table = new Uint8Array(50);
+        for (let i = 0; i < 50; i++)
+          Custom_table[i] = i;
+        Custom_table[0] = 0xfe;
+        Custom_table[1] = 0x06;
+        var inputElement = document.getElementById("input5");
+        var inputValue = inputElement.value;
 
 
+
+
+        let hexstr = "FE 06 ";
+        let val = parseInt(inputValue);
+        hexstr += convertToHexadecimal(val);
+        iptOutput.value = "";
+        iptOutput.value = hexstr; // 将数值转为16进制字符串
+        //    console.log(inputValue, hexstr); // 打印信息
+        Custom_table[2] = 1;//第一组信息
+        await device.sendReport(0, Custom_table); // 发送数据，第一个参数为reportId，填0表示不使用reportId
+        Custom_table[2] = 2;//第二组信息
+        await device.sendReport(0, Custom_table); // 发送数据，第一个参数为reportId，填0表示不使用reportId
+      } catch (error) {
+        iptLog.value += `${error}\n\n`;
+        iptLog.scrollTop = iptLog.scrollHeight; // 滚动到底部
+      }
+
+    };
+
+    //指令 读取按键组值
+    btnRead.
+      onclick = async () => {
+        try {
+          if (!device?.opened) {
+            throw "Device not opened";
+          }
+          const Custom_table = new Uint8Array(50);
+
+          for (let i = 0; i < 50; i++)
+            Custom_table[i] = 0;
+          Custom_table[0] = 0xfe;
+          Custom_table[1] = 0xf1;
+          var inputElement = document.getElementById("input_read");
+          var inputValue = inputElement.value;
+
+          Custom_table[2] = inputValue;//组号
+
+
+          let hexstr = "FE F1 ";
+          let val = parseInt(inputValue);
+          hexstr += convertToHexadecimal(val);
+          iptOutput.value = "";
+          iptOutput.value = hexstr; // 将数值转为16进制字符串
+          console.log(inputValue, hexstr); // 打印信息
+
+          await device.sendReport(0, Custom_table); // 发送数据，第一个参数为reportId，填0表示不使用reportId
+
+        } catch (error) {
+          iptLog.value += `${error}\n\n`;
+          iptLog.scrollTop = iptLog.scrollHeight; // 滚动到底部
+        }
+      };
 
     // 全局HID设备插入事件
     navigator.hid.onconnect = (event) => {
