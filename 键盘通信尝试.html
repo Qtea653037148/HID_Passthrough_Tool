@@ -69,23 +69,24 @@
     <textarea id="iptInput" readonly></textarea>
     <div class="child">
 
-      <p id="sliderValue">100</p>
-      <input style="width: 200px" ; type="range" min="0" max="255" value="100" id="slider" class="container">
+      <div style="width: 300px ;height: 20px;" ;>
+        <p id="sliderValue">100</p>
+        <input style="width: 200px;height: 50px;" ; type="range" min="0" max="255" value="100" id="slider"
+          class="container">
+      </div>
 
+      <div style="width: 300px ;height: 50px;" ;>
 
-
-      <div style="width: 300px ;height: 100px;" ;>
-
-        <button id="btnCol">颜色1</button>
-        <button id="color2">颜色2</button>
-        <button id="color3">颜色3</button>
+        <button style="width: 80px " id="btnCol">颜色1</button>
+        <button style="width: 80px " id="color2">颜色2</button>
+        <button style="width: 80px " id="color3">颜色3</button>
 
       </div>
-      <div style="width: 300px" ;>
+      <div style="width: 300px;height: 50px;" ;>
 
-        <button id="amin1">动画1</button>
-        <button id="amin2">动画2</button>
-        <button id="amin3">动画3</button>
+        <button style="width: 80px " id="amin1">无动画</button>
+        <button style="width: 80px " id="amin2">静态动画</button>
+        <button style="width: 80px " id="amin3">动态动画</button>
 
       </div>
 
@@ -284,9 +285,6 @@
       return anjian_rgb;
     };
     btnCol.onclick = async () => {
-
-
-
       try {
         if (!device?.opened) {
           throw "Device not opened";
@@ -398,6 +396,76 @@
       }
     };
 
+    aminl.onclick = async () => {
+      try {
+        if (!device?.opened) {
+          throw "Device not opened";
+
+        }
+        //document.getElementById("amin3").style.display = "none";
+        const Custom_table = new Uint8Array(32);
+
+        for (let i = 0; i < 32; i++)
+          Custom_table[i] = 0;
+        Custom_table[0] = 0xfe;
+        Custom_table[1] = 3;
+        Custom_table[2] = 0; //fe 03 00 00 00 00
+        await device.sendReport(0, Custom_table); // 发送数据，第一个参数为reportId，填0表示不使用reportId
+
+      } catch (error) {
+        iptLog.value += `${error}\n\n`;
+        iptLog.scrollTop = iptLog.scrollHeight; // 滚动到底部
+      }
+    };
+
+    amin2.onclick = async () => {
+      try {
+        if (!device?.opened) {
+          throw "Device not opened";
+
+        }
+
+        const Custom_table = new Uint8Array(32);
+
+        for (let i = 0; i < 32; i++)
+          Custom_table[i] = 0;
+        Custom_table[0] = 0xfe;
+        Custom_table[1] = 3;
+        Custom_table[2] = 1;
+        Custom_table[3] = 0;
+        Custom_table[4] = 25; //fe 03 01 00 19 00
+        await device.sendReport(0, Custom_table); // 发送数据，第一个参数为reportId，填0表示不使用reportId
+
+      } catch (error) {
+        iptLog.value += `${error}\n\n`;
+        iptLog.scrollTop = iptLog.scrollHeight; // 滚动到底部
+      }
+    };
+
+
+    amin3.onclick = async () => {
+      try {
+        if (!device?.opened) {
+          throw "Device not opened";
+
+        }
+
+        const Custom_table = new Uint8Array(32);
+
+        for (let i = 0; i < 32; i++)
+          Custom_table[i] = 0;
+        Custom_table[0] = 0xfe;
+        Custom_table[1] = 3;
+        Custom_table[2] = 51;
+        Custom_table[3] = 0;
+        Custom_table[4] = 25; //fe 03 01 00 19 00
+        await device.sendReport(0, Custom_table); // 发送数据，第一个参数为reportId，填0表示不使用reportId
+
+      } catch (error) {
+        iptLog.value += `${error}\n\n`;
+        iptLog.scrollTop = iptLog.scrollHeight; // 滚动到底部
+      }
+    };
 
 
 
